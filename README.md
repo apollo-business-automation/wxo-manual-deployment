@@ -500,13 +500,60 @@ Based on https://www.ibm.com/docs/en/software-hub/5.2.x?topic=orchestrate-post-i
 
 Based on https://www.ibm.com/docs/en/software-hub/5.2.x?topic=csi-creating-service-instance-from-web-client-3
 
-Crate new instance
+Crate new instance and name it `wxo`, this name is used later when adding models.
 
-Access on
-https://cpd-wxo.apps.xxx/orchestrate/chat
+Access on https://cpd-wxo.apps.xxx/orchestrate/chat
 
 ### Registering external models through AI gateway
 
 Based on https://www.ibm.com/docs/en/software-hub/5.2.x?topic=setup-registering-external-models-through-ai-gateway
 
-You have to add external models
+You have to add external LLM models and embedding to the instance.
+
+To generate ZenApiKey in web ui, follow https://www.ibm.com/docs/en/software-hub/5.2.x?topic=started-generating-api-keys#api-keys__platform__title__1
+
+To generate token from this ZenApiKey, follow https://www.ibm.com/docs/en/software-hub/5.2.x?topic=keys-generating-zenapikey-authorization-tokens
+```bash
+echo "cpadmin:<api_key>" | base64
+```
+
+Based on https://developer.ibm.com/apis/catalog/watsonorchestrate--custom-assistants/Getting+the+API+endpoints 
+
+URL used in curl commands https://<wxo-cluster-hostname>/orchestrate/<namespace>/instances/<wxo-instance-id>/v1/orchestrate/models
+
+- <wxo-cluster-hostname>: cpd-wxo.apps.xxx.com
+- <namespace>: wxo (as defined name during instance creation)
+- <wxo-instance-id>: Unique identifier of your instance. For watsonx Orchestrate, it’s the number after orchestrate- in the instance details URL (https://cpd-wxo.apps.xxx.com/zen/?context=icp4data#/myInstances)
+
+Sample curl for adding LLM from SaaS watsonx.ai instance
+```bash
+curl -X POST \
+  "https://cpd-wxo.apps.693694asdfb778f66e42d032.eu1.techzone.ibm.com/orchestrate/wxo/instances/1765201203123219/v1/orchestrate/models" \
+  -H "accept: application/json" \
+  -H "Authorization: ZenApiKey Y3BhZG1pbjpqMGI5UGlRSU9hMzBKY0cyUGNrOWNOekx6eWVasdfhRGFNVXNEcEU3Cg==" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "virtual-model/watsonx/meta-llama/llama-3-2-90b-vision-instruct",
+    "display_name": "virtual-model/watsonx/meta-llama/llama-3-2-90b-vision-instruct",
+    "provider_config": {
+      "api_key": "OHGQDzh4Pewm3Omasdf9WypQgv0Un32ogsq45tibq9E7",
+      "watsonxSpaceId": "429asdf1-570c-4fcd-93bb-a593d83d6bd1",
+      "customHost": "https://eu-de.ml.cloud.ibm.com/ml/v1/text/chat?version=2023-05-29"
+    },
+    "description": "string",
+    "tags": [
+      "default"
+    ],
+    "model_type": "chat",
+    "connection_id": "string"
+  }' \
+  --insecure -v
+```
+
+And the successful response
+```text
+...
+< HTTP/1.1 201 Created
+...
+{"id":"04b6ce0f-8f0d-4224-8e1f-bcd78ca0c87c"}
+```
