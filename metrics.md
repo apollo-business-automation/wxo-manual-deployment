@@ -4,6 +4,7 @@ Version of Software Hub 5.2.2
 
 ## Nodes utilisation
 
+```text
 node/worker-1
   Resource           Requests           Limits
   cpu                8492m (54%)        26965m (173%)
@@ -33,6 +34,7 @@ node/worker-6
   Resource           Requests       Limits
   cpu                9402m (60%)    35110m (226%)
   memory             23892Mi (37%)  55687432704 (84%)
+```  
 
 ## Metrics gathered with artificial resource quota
 
