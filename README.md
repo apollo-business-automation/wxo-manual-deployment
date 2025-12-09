@@ -1,4 +1,4 @@
-# watsonx Orchestrate without GPUs manual installation ✍️<!-- omit in toc -->
+# watsonx Orchestrate agentic only, without GPUs manual installation ✍️<!-- omit in toc -->
 
 Based on https://www.ibm.com/docs/en/software-hub/5.2.x?topic=installing
 
@@ -31,6 +31,9 @@ Version of Software Hub 5.2.2
 - [Post-installation setup for watsonx Orchestrate](#post-installation-setup-for-watsonx-orchestrate)
   - [Creating a service instance for watsonx Orchestrate from the web client](#creating-a-service-instance-for-watsonx-orchestrate-from-the-web-client)
   - [Registering external models through AI gateway](#registering-external-models-through-ai-gateway)
+- [Real metrics from cluster](#real-metrics-from-cluster)
+- [Contacts](#contacts)
+- [Notice](#notice)
 
 
 ## Disclaimer ✋
@@ -557,3 +560,18 @@ And the successful response
 ...
 {"id":"04b6ce0f-8f0d-4224-8e1f-bcd78ca0c87c"}
 ```
+
+## Real metrics from cluster
+
+See details at - [Metrics](metrics.md)
+
+## Contacts
+
+Jan Dušek  
+jdusek@cz.ibm.com  
+AI Productivity Partner Technical Specialist  
+IBM Czech Republic and Slovakia
+
+## Notice
+
+© Copyright IBM Corporation 2025.
