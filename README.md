@@ -589,16 +589,7 @@ EOF
 
 Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=services-running-batch-installation-solutions
 
-Install Operators
-```bash
-${CPDM_OC_LOGIN}
-cpd-cli manage apply-olm \
---release=${VERSION} \
---cpd_operator_ns=${PROJECT_CPD_INST_OPERATORS} \
---components=${COMPONENTS}
-```
-
-Install Operands
+Install Services
 ```bash
 cpd-cli manage install-components \
 --license_acceptance=true \
