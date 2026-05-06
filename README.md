@@ -254,6 +254,8 @@ Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing-collect
 
 Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=information-setting-up-installation-environment-variables
 
+Make sure to provide your Entitlement key (\<enter your IBM entitlement API key>) and also adjust storage classes as needed (STG_CLASS_BLOCK, STG_CLASS_FILE)
+
 ```bash
 cat << EOF > /usr/install/cpd_vars.sh
 #===============================================================================
