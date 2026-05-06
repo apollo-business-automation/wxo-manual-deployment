@@ -502,7 +502,10 @@ oc create secret docker-registry ${IMAGE_PULL_SECRET} \
 --namespace=${PROJECT_CPD_INST_OPERANDS}
 ```
 
-The following command is a long running thing, so it is important to keep the terminal alive or go back and restart the command.
+The following command is a long running thing, so it is important to keep the terminal alive. If the terminal times out / is refreshed / restarted, you have to bash, cd and source as described in [Command line preparation in install Pod](#command-line-preparation-in-install-pod) and re-run the command.
+
+If you are facing failures with `[FAILED] The results of the storage tests were below the minimum thresholds. ` and you can try re-running the command with `--run_storage_tests=false` at the end.
+
 ```bash
 ${CPDM_OC_LOGIN}
 cpd-cli manage install-components \
