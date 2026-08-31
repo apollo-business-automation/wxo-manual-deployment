@@ -1,6 +1,6 @@
 # watsonx Orchestrate agentic only, without GPUs real metrics from cluster
 
-Version of Software Hub 5.3.1
+Version of Software Hub 5.4.0
 
 ## Metrics gathered with artificial resource quota
 
