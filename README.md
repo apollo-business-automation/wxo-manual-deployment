@@ -500,8 +500,8 @@ cpd-cli manage deploy-events-operator \
 
 ## Installing an instance of IBM Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing-instance-software-hub
-Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=hub-creating-image-pull-secrets-instance
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing-instance-software-hub  
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=hub-creating-image-pull-secrets-instance  
 Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=hub-installing-software
 
 Create private pull secrets in projects
@@ -609,6 +609,7 @@ cat << EOF > /usr/install/cpd-cli-workspace/olm-utils-workspace/work/install-opt
 # ............................................................................
 non_olm:
   watsonxOrchestrate:
+    size: medium
     installMode: "agentic"
     watsonxAI:
       watsonxaiifm: false
@@ -637,7 +638,7 @@ cpd-cli manage install-components \
 --param-file=/tmp/work/install-options.yml
 ```
 
-TODO Consider NOHUP alternative to make sure that the command keeps running after losing terminal connection.
+Consider NOHUP alternative to make sure that the command keeps running after losing terminal connection.
 
 ## Post-installation setup (Day 1 operations)
 
