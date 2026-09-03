@@ -52,10 +52,9 @@ Not for production use. Suitable for Demo and PoC environments.
 
 ## Used environment
 
-Tested with OCP version 4.18. at IBM TechZone https://techzone.ibm.com/collection/techzone-certified-openshift, environment "OpenShift Cluster OCPv IBM Cloud".
-
-- Empty OpenShift cluster of a supported version
+- Empty OpenShift 4.18 cluster (you could use other supported version)
 - With direct internet connection
+- With ODF deployed
 - File RWX StorageClass - in this case ocs-external-storagecluster-cephfs is used, feel free to find and replace
 - Block RWO StorageClass - in this case ocs-external-storagecluster-ceph-rbd is used, feel free to find and replace
 - Cluster admin user
