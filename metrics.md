@@ -44,6 +44,7 @@ spec:
       ocs-external-storagecluster-ceph-rbd.storageclass.storage.k8s.io/persistentvolumeclaims: '99999999'
       requests.ephemeral-storage: 99999999Gi
       limits.ephemeral-storage: 99999999Gi
+      requests.nvidia.com/gpu: '99999999'
   selector:
     annotations: null
     labels:
@@ -60,6 +61,7 @@ status:
       status:
         used:
           ocs-external-storagecluster-ceph-rbd.storageclass.storage.k8s.io/requests.storage: '0'
+          limits.nvidia.com/gpu: '99999999'
           requests.ephemeral-storage: '0'
           count/jobs.batch: '0'
           count/secrets: '2'
@@ -72,6 +74,7 @@ status:
           ocs-external-storagecluster-cephfs.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
           limits.cpu: '1'
           count/deployments.apps: '1'
+          requests.nvidia.com/gpu: '0'
           limits.ephemeral-storage: '0'
           limits.memory: 384Mi
           ocs-external-storagecluster-ceph-rbd.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
@@ -95,6 +98,7 @@ status:
           ocs-external-storagecluster-cephfs.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
           limits.cpu: 18765m
           count/deployments.apps: '23'
+          requests.nvidia.com/gpu: '0'
           limits.ephemeral-storage: 19744Mi
           limits.memory: '36710304256'
           ocs-external-storagecluster-ceph-rbd.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
@@ -118,6 +122,7 @@ status:
           ocs-external-storagecluster-cephfs.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
           limits.cpu: '0'
           count/deployments.apps: '1'
+          requests.nvidia.com/gpu: '0'
           limits.ephemeral-storage: '0'
           limits.memory: '0'
           ocs-external-storagecluster-ceph-rbd.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
@@ -141,6 +146,7 @@ status:
           ocs-external-storagecluster-cephfs.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
           limits.cpu: '0'
           count/deployments.apps: '3'
+          requests.nvidia.com/gpu: '0'
           limits.ephemeral-storage: '0'
           limits.memory: '0'
           ocs-external-storagecluster-ceph-rbd.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
@@ -164,6 +170,7 @@ status:
           ocs-external-storagecluster-cephfs.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
           limits.cpu: 20m
           count/deployments.apps: '1'
+          requests.nvidia.com/gpu: '0'
           limits.ephemeral-storage: 500Mi
           limits.memory: 150Mi
           ocs-external-storagecluster-ceph-rbd.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
@@ -187,6 +194,7 @@ status:
           ocs-external-storagecluster-cephfs.storageclass.storage.k8s.io/persistentvolumeclaims: '0'
           limits.cpu: 12300m
           count/deployments.apps: '14'
+          requests.nvidia.com/gpu: '0'
           limits.ephemeral-storage: 6Gi
           limits.memory: 34848Mi
           ocs-external-storagecluster-ceph-rbd.storageclass.storage.k8s.io/persistentvolumeclaims: '6'
@@ -210,6 +218,7 @@ status:
           ocs-external-storagecluster-cephfs.storageclass.storage.k8s.io/persistentvolumeclaims: '2'
           limits.cpu: 98302m
           count/deployments.apps: '36'
+          requests.nvidia.com/gpu: '0'
           limits.ephemeral-storage: '61769173504'
           limits.memory: '174265332224'
           ocs-external-storagecluster-ceph-rbd.storageclass.storage.k8s.io/persistentvolumeclaims: '20'
@@ -232,6 +241,7 @@ status:
       ocs-external-storagecluster-cephfs.storageclass.storage.k8s.io/persistentvolumeclaims: '2'
       limits.cpu: 130387m
       count/deployments.apps: '79'
+      requests.nvidia.com/gpu: '0'
       limits.ephemeral-storage: '89438996992'
       limits.memory: 242262063Ki
       ocs-external-storagecluster-ceph-rbd.storageclass.storage.k8s.io/persistentvolumeclaims: '26'

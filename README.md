@@ -1,11 +1,11 @@
 # watsonx Orchestrate agentic only, without GPUs manual installation ✍️<!-- omit in toc -->
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing
 
-Version of Software Hub 5.3.1
+Version of Software Hub 5.4.0 Patch 5.
 
 - [Disclaimer ✋](#disclaimer-)
-- [Used environement](#used-environement)
+- [Used environment](#used-environment)
 - [Installing Software Hub](#installing-software-hub)
 - [Setting up a client workstation](#setting-up-a-client-workstation)
   - [Creating an install client directly in OCP](#creating-an-install-client-directly-in-ocp)
@@ -50,10 +50,11 @@ Please do not hesitate to create an issue here if needed. Your feedback is appre
 
 Not for production use. Suitable for Demo and PoC environments.
 
-## Used environement
+## Used environment
 
-- Empty OpenShift cluster of a supported version
+- Empty OpenShift 4.18 cluster (you could use other supported version)
 - With direct internet connection
+- With ODF deployed
 - File RWX StorageClass - in this case ocs-external-storagecluster-cephfs is used, feel free to find and replace
 - Block RWO StorageClass - in this case ocs-external-storagecluster-ceph-rbd is used, feel free to find and replace
 - Cluster admin user
@@ -61,11 +62,11 @@ Not for production use. Suitable for Demo and PoC environments.
 
 ## Installing Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing#install__client
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing#install__client
 
 ## Setting up a client workstation
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing-setting-up-client-workstation
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing-setting-up-client-workstation
 
 Requested tooling provided in the install Pod.
 
@@ -125,8 +126,18 @@ roleRef:
   name: cluster-admin
 ```
 
-Create a pod from which the install will be performed with the following definition.  
-It is ready when the message *Install pod - Ready* is in its Log.
+Create a pod from which the install will be performed with the following definition. It creates a pod with podman required for cpd-cli, cpd-cli itself and oc. The installation will be initiated and performed from this pod.
+
+Alternatively you can replicate the installation steps below on any Linux machine of your preference with connectivity to the OCP cluster.
+
+The version of cpd-cli downloaded to the install pod using the bash command in the yaml below needs to be aligned with the version and patch of the deployment. The cpd-cli releases are not updated for every patch. You need to find the best match. E.g. for version 5.4.0 with patch 5, we used release  https://github.com/IBM/cpd-cli/releases/download/v14.4.0.5. Use download packages with **EE** in the name for IBM Cloud Pak for Data Enterprise Edition.
+
+If you see a pop-up message starting with "Admission Webhook Warning - Pod install violates policy 299..." during the install pod creation, you can ignore it.
+
+The install pod is ready when the message *Install pod - Ready* is displayed in its Log. Wait for it.
+
+You can terminate and delete the pod when the installation is finished. You can create another instance later e.g. for maintenance and upgrades.
+
 ```yaml
 kind: Pod
 apiVersion: v1
@@ -144,23 +155,28 @@ spec:
       command: ["/bin/bash"]
       args:
         ["-c","cd /usr;
+          ### Install podman
           yum install podman -y;
+          ### Install oc
           curl -k https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz --output oc.tar;
           tar -xvf oc.tar oc;
           chmod u+x oc;
           ln -fs /usr/oc /usr/bin/oc;
-          curl -kL https://github.com/IBM/cpd-cli/releases/download/v14.3.1/cpd-cli-linux-EE-14.3.1.tgz --output cpd-cli-linux.tgz;
+          ### Install cpd-cli
+          curl -kL https://github.com/IBM/cpd-cli/releases/download/v14.4.0.5/cpd-cli-linux-EE-14.4.0.tgz --output cpd-cli-linux.tgz;
           tar -xzf cpd-cli-linux.tgz;
           mv $(tar -tzf cpd-cli-linux.tgz | head -1 | cut -f1 -d'/') cpd-cli;
           echo 'export PATH=/usr/cpd-cli:$PATH' >> ~/.bashrc;
           export PATH=/usr/cpd-cli:$PATH;
           cd install;
           cpd-cli manage restart-container;
+          #### Show installed components
           podman -v;
           oc version;
           cpd-cli version;
+          ### Keep the pod up by running an infinite loop
           while true;
-          do echo 'Install pod - Ready - Enter it via Terminal and \"bash\"';
+            do echo 'Install pod - Ready - Enter it via Terminal and \"bash\"';
           sleep 300; done"]
       imagePullPolicy: IfNotPresent
       volumeMounts:
@@ -176,9 +192,11 @@ spec:
 
 This needs to be repeated if you don't perform this in one go and you come back to resume.
 
-Open Terminal window of the *install* pod.
+How to access the terminal of the install pod - alternatives:
+- Open Terminal window of the *install* pod. In this case the terminal window is active when your web browser window accessing it is active.
+- Run ```oc login``` and ```oc exec -it -n cp4d-install install -- bash``` from a Linux machine of your preference with connectivity to the OCP cluster - bastion host, your local machine etc.
 
-Enter bash.
+Enter bash in the install pod.
 ```sh
 bash
 ```
@@ -186,12 +204,12 @@ bash
 Enter change dir and source variables.
 ```bash
 cd /usr/install
-source /usr/install/cpd_vars.sh # Only if you are returning later to continue, doesn't work the first time as it doesn't exist yet.
+source /usr/install/cpd_vars.sh # Only if you are returning later to continue, doesn't work the first time as the file doesn't exist yet.
 ```
 
 ## Setting up a cluster for IBM Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing-setting-up-cluster
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing-setting-up-cluster
 
 ### Installing the Red Hat OpenShift Container Platform cert-manager Operator
 
@@ -246,13 +264,18 @@ Wait for pods to reach Running status
 oc get pods -n cert-manager -w
 ```
 
+You should see three pods like after like max a couple of minutes:
+cert-manager-55b4d954d5-7pxnw              1/1     Running   0          19s
+cert-manager-cainjector-559cdd8c87-t7tk7   1/1     Running   0          37s
+cert-manager-webhook-6486ffd997-r9kt6      1/1     Running   0          28s
+
 ## Collecting information required to install IBM Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing-collecting-required-information
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing-collecting-required-information
 
 ### Setting up installation environment variables
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=information-setting-up-installation-environment-variables
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=information-setting-up-installation-environment-variables
 
 Make sure to provide your Entitlement key (\<enter your IBM entitlement API key>) and also adjust storage classes as needed (STG_CLASS_BLOCK, STG_CLASS_FILE)
 
@@ -313,7 +336,8 @@ export IMAGE_PULL_PREFIX=icr.io
 # IBM Software Hub version
 # ------------------------------------------------------------------------------
 
-export VERSION=5.3.1
+export VERSION=5.4.0
+export PATCH_ID=5
 
 # ------------------------------------------------------------------------------
 # Components
@@ -332,11 +356,11 @@ cd /usr/install
 
 ## Preparing your cluster for IBM Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing-preparing-your-cluster
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing-preparing-your-cluster
 
 ### Updating the global image pull secret for IBM Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=cluster-updating-global-image-pull-secret
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=cluster-updating-global-image-pull-secret
 
 ```bash
 ${CPDM_OC_LOGIN}
@@ -346,7 +370,7 @@ cpd-cli manage add-icr-cred-to-global-pull-secret \
 
 ### Creating the required projects (namespaces) for the shared cluster components for IBM Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=cluster-creating-required-projects-namespaces-shared-components
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=cluster-creating-required-projects-namespaces-shared-components
 
 You might need to confirm prompt about untrusted certs.
 ```bash
@@ -357,9 +381,9 @@ oc new-project ${PROJECT_SCHEDULING_SERVICE}
 
 ### Installing shared cluster components for IBM Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=cluster-installing-shared-components
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=cluster-installing-shared-components
 
-Scheduling service is omitted in this guide, if you want to deploy it, keep in mind that it has additinal prerequisites at https://www.ibm.com/docs/en/software-hub/5.3.x?topic=cluster-creating-scoped-resources-shared-components and https://www.ibm.com/docs/en/software-hub/5.3.x?topic=cluster-creating-image-pull-secrets-shared-components
+Scheduling service is omitted in this guide, if you want to deploy it, keep in mind that it has additional prerequisites at https://www.ibm.com/docs/en/software-hub/5.4.x?topic=cluster-creating-scoped-resources-shared-components and https://www.ibm.com/docs/en/software-hub/5.4.x?topic=cluster-creating-image-pull-secrets-shared-components
 
 ```bash
 ${CPDM_OC_LOGIN}
@@ -371,7 +395,7 @@ cpd-cli manage apply-cluster-components \
 
 ### Installing Red Hat OpenShift Serverless Knative Eventing
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=software-installing-red-hat-openshift-serverless-knative-eventing
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=software-installing-red-hat-openshift-serverless-knative-eventing
 
 ```bash
 oc new-project ${PROJECT_IBM_EVENTS}
@@ -398,7 +422,7 @@ oc apply \
 --force-conflicts
 ```
 
-The following command tends to somehow break the terminal, forcing it to refresh. That means you have to bash, cd and source as described in [Command line preparation in install Pod](#command-line-preparation-in-install-pod) and re-run the command.
+The following command tends to somehow break the terminal connection after it finishes, esp. in the terminal window running in the OCP web console. If it happens, you need to bash, cd and source as described in [Command line preparation in install Pod](#command-line-preparation-in-install-pod) and re-run the command. 
 ```bash
 ${CPDM_OC_LOGIN}
 cpd-cli manage deploy-knative-eventing \
@@ -408,11 +432,11 @@ cpd-cli manage deploy-knative-eventing \
 
 ## Preparing to install an instance of IBM Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing-preparing-install-instance-software-hub
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing-preparing-install-instance-software-hub
 
 ## Creating cluster-scoped resources for the IBM Software Hub platform and services
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=hub-creating-cluster-scoped-resources
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=hub-creating-cluster-scoped-resources
 
 ```bash
 cpd-cli manage case-download \
@@ -434,7 +458,7 @@ cd /usr/install
 
 ## Applying the required permissions by running the authorize-instance-topology command
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=arppn-applying-required-permissions-by-running-authorize-instance-topology-command
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=arppn-applying-required-permissions-by-running-authorize-instance-topology-command
 
 ```bash
 ${CPDM_OC_LOGIN}
@@ -445,7 +469,7 @@ cpd-cli manage authorize-instance-topology \
 
 ### Creating secrets for services that use Multicloud Object Gateway
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=piish-creating-secrets-services-that-use-multicloud-object-gateway
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=piish-creating-secrets-services-that-use-multicloud-object-gateway
 
 ```bash
 export NOOBAA_ACCOUNT_CREDENTIALS_SECRET=noobaa-admin
@@ -462,7 +486,7 @@ cpd-cli manage setup-mcg \
 
 ### Installing the IBM Events Operator for watsonx Assistant or watsonx Orchestrate
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=hub-installing-events-operator
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=hub-installing-events-operator
 
 ```bash
 ${CPDM_OC_LOGIN}
@@ -475,9 +499,9 @@ cpd-cli manage deploy-events-operator \
 
 ## Installing an instance of IBM Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing-instance-software-hub
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=hub-creating-image-pull-secrets-instance
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=hub-installing-software
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing-instance-software-hub  
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=hub-creating-image-pull-secrets-instance  
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=hub-installing-software
 
 Create private pull secrets in projects
 ```bash
@@ -549,11 +573,11 @@ cpd-cli manage get-cpd-instance-details \
 
 ## Setting up IBM Software Hub
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing-setting-up-software-hub
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing-setting-up-software-hub
 
 ### Applying your entitlements without node pinning
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=entitlements-applying-your-without-node-pinning
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=entitlements-applying-your-without-node-pinning
 
 Using non-prod in this case, for prod omit the last back-slash and production=false line
 ```bash
@@ -566,13 +590,15 @@ cpd-cli manage apply-entitlement \
 
 ## Installing solutions and services
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=installing-solutions-services
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=installing-solutions-services
 
 ### Specifying installation options for services
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=services-specifying-installation-options#install-platform-param-file__orchestrate-parms
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=services-specifying-installation-options#install-platform-param-file__orchestrate-parms
 
 If you plan to install watsonx Orchestrate configuration, specify the appropriate installation options in a file named install-options.yml in the cpd-cli work directory (For example: cpd-cli-workspace/olm-utils-workspace/work).
+
+Using blank ootbModels (external inference needs to be provided after the installation) and medium size (the only size available currently for production).
 
 ```bash
 cat << EOF > /usr/install/cpd-cli-workspace/olm-utils-workspace/work/install-options.yml
@@ -582,6 +608,7 @@ cat << EOF > /usr/install/cpd-cli-workspace/olm-utils-workspace/work/install-opt
 # ............................................................................
 non_olm:
   watsonxOrchestrate:
+    size: medium
     installMode: "agentic"
     watsonxAI:
       watsonxaiifm: false
@@ -592,7 +619,7 @@ EOF
 
 ### Running a batch installation of solutions and services
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=services-running-batch-installation-solutions
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=services-running-batch-installation-solutions
 
 Install Services
 ```bash
@@ -600,6 +627,7 @@ cpd-cli manage install-components \
 --license_acceptance=true \
 --components=${COMPONENTS} \
 --release=${VERSION} \
+--patch_id=${PATCH_ID} \
 --operator_ns=${PROJECT_CPD_INST_OPERATORS} \
 --instance_ns=${PROJECT_CPD_INST_OPERANDS} \
 --block_storage_class=${STG_CLASS_BLOCK} \
@@ -609,17 +637,19 @@ cpd-cli manage install-components \
 --param-file=/tmp/work/install-options.yml
 ```
 
+Consider NOHUP alternative to make sure that the command keeps running after losing terminal connection.
+
 ## Post-installation setup (Day 1 operations)
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=administering-post-installation-setup-day-1
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=administering-post-installation-setup-day-1
 
 ## Post-installation setup for watsonx Orchestrate
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=orchestrate-post-installation-setup
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=orchestrate-post-installation-setup
 
 ### Creating a service instance for watsonx Orchestrate from the web client
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=csi-creating-service-instance-from-web-client-3
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=csi-creating-service-instance-from-web-client-3
 
 Crate new instance and name it `wxo`, this name is used later when adding models.
 
@@ -627,13 +657,13 @@ Access on https://cpd-wxo.apps.xxx/orchestrate/chat
 
 ### Registering external models through AI gateway
 
-Based on https://www.ibm.com/docs/en/software-hub/5.3.x?topic=setup-optional-registering-external-models-through-ai-gateway
+Based on https://www.ibm.com/docs/en/software-hub/5.4.x?topic=setup-optional-registering-external-models-through-ai-gateway
 
 You have to add external LLM models and embedding to the instance.
 
-To generate ZenApiKey in web ui, follow https://www.ibm.com/docs/en/software-hub/5.3.x?topic=started-generating-api-keys#api-keys__platform__title__1
+To generate ZenApiKey in web ui, follow https://www.ibm.com/docs/en/software-hub/5.4.x?topic=started-generating-api-keys#api-keys__platform__title__1
 
-To generate token from this ZenApiKey, follow https://www.ibm.com/docs/en/software-hub/5.3.x?topic=keys-generating-zenapikey-authorization-tokens
+To generate token from this ZenApiKey, follow https://www.ibm.com/docs/en/software-hub/5.4.x?topic=keys-generating-zenapikey-authorization-tokens
 ```bash
 echo "cpadmin:<api_key>" | base64
 ```
